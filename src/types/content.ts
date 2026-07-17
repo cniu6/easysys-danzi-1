@@ -126,6 +126,8 @@ export interface Album {
   enabled: boolean;
   title: I18nText;
   subtitle: I18nText;
+  /** 专辑封面图（可选，旧数据可能有） */
+  cover?: string;
   /**
    * 媒体列表（图片 + 视频）
    * 旧数据可能只有 images，读取时用 normalizeAlbumMedia 归一化

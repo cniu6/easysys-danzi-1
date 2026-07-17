@@ -44,11 +44,12 @@ function sanitizeMissingLocalMedia(content: SiteContent): SiteContent {
     if (album.cover && !publicFileExists(album.cover)) album.cover = "";
   }
 
-  for (const slide of next.home?.slides || []) {
-    if (slide.image && !publicFileExists(slide.image)) slide.image = "";
+  for (const slide of next.home?.heroSlides || []) {
+    if (slide.src && !publicFileExists(slide.src)) slide.src = "";
+    if (slide.poster && !publicFileExists(slide.poster)) slide.poster = "";
   }
 
-  for (const card of next.galleryCards || []) {
+  for (const card of next.gallery || []) {
     if (card.image && !publicFileExists(card.image)) card.image = "";
   }
 
@@ -56,12 +57,20 @@ function sanitizeMissingLocalMedia(content: SiteContent): SiteContent {
     if (s.image && !publicFileExists(s.image)) s.image = "";
   }
 
-  if (next.publicity?.image && !publicFileExists(next.publicity.image)) {
-    next.publicity.image = "";
+  if (Array.isArray(next.publicity)) {
+    next.publicity = next.publicity.filter((src) => publicFileExists(src));
   }
 
   if (next.pages?.about?.heroImage && !publicFileExists(next.pages.about.heroImage)) {
     next.pages.about.heroImage = "";
+  }
+
+  for (const page of Object.values(next.pages || {})) {
+    if (!page || !Array.isArray(page.media)) continue;
+    for (const m of page.media) {
+      if (m.src && !publicFileExists(m.src)) m.src = "";
+      if (m.poster && !publicFileExists(m.poster)) m.poster = "";
+    }
   }
 
   return next;
