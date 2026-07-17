@@ -2,18 +2,24 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
 /**
- * 解析 .env.local 路径：
- * - 优先 data/.env.local（Docker 持久卷，改密/配置不丢）
- * - 其次项目根 .env.local（本地开发）
- * - 新建时写到 data/（若 data 目录存在）
+ * 读取路径：优先持久化的 data/.env.local，否则根目录 .env.local
  */
-function getEnvLocalPath(): string {
+function getEnvLocalPathForRead(): string {
   const dataDir = path.join(process.cwd(), "data");
   const inData = path.join(dataDir, ".env.local");
   const inRoot = path.join(process.cwd(), ".env.local");
   if (existsSync(inData)) return inData;
   if (existsSync(inRoot)) return inRoot;
   return existsSync(dataDir) ? inData : inRoot;
+}
+
+/**
+ * 写入路径：有 data 目录就写到 data/.env.local（挂卷即可持久，在线改密不丢）
+ */
+function getEnvLocalPathForWrite(): string {
+  const dataDir = path.join(process.cwd(), "data");
+  if (existsSync(dataDir)) return path.join(dataDir, ".env.local");
+  return path.join(process.cwd(), ".env.local");
 }
 
 /**
@@ -60,7 +66,7 @@ function isSafeEnvKey(key: string): boolean {
  */
 export function readEnvLocalValue(key: string): string | null {
   if (!isSafeEnvKey(key)) return null;
-  const envPath = getEnvLocalPath();
+  const envPath = getEnvLocalPathForRead();
   try {
     if (!existsSync(envPath)) {
       const fallback = process.env[key];
@@ -89,7 +95,7 @@ export function readEnvLocalValue(key: string): string | null {
 /**
  * 更新 .env.local 中某一键；不存在则追加
  * 同时同步 process.env，保证当前进程立刻可用
- * Docker 下优先写入 data/.env.local，随持久卷保存
+ * Docker 下写入 data/.env.local，随持久卷保存（在线改密不丢）
  */
 export function writeEnvLocalValue(key: string, value: string): void {
   if (!isSafeEnvKey(key)) {
@@ -103,7 +109,7 @@ export function writeEnvLocalValue(key: string, value: string): void {
     throw new Error("值过长");
   }
 
-  const envPath = getEnvLocalPath();
+  const envPath = getEnvLocalPathForWrite();
   const dir = path.dirname(envPath);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });

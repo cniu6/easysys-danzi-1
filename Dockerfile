@@ -9,8 +9,10 @@
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
+# 强制官方源，避免 lock 里残留镜像站 tarball 触发 EALLOWREMOTE
+COPY package.json package-lock.json .npmrc ./
+RUN npm config set registry https://registry.npmjs.org/ \
+  && npm ci --registry=https://registry.npmjs.org/
 
 FROM node:20-alpine AS builder
 WORKDIR /app
