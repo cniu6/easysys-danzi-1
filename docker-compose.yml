@@ -1,0 +1,28 @@
+# 本地/自建参考：持久化 CMS 数据与上传媒体
+# 云平台部署时，请把下面三个路径挂到平台的「持久存储 / Volume」
+
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # 也可在平台控制台覆盖；改密后以 data/.env.local 为准
+      - ADMIN_PASSWORD=admin123
+      - AUTH_SECRET=daizi-studio-secret-change-me-in-production
+      - AUTH_SESSION_HOURS=12
+    volumes:
+      # 站点内容 JSON + 后台密码
+      - danzi-data:/app/data
+      # 后台上传的图片
+      - danzi-uploads:/app/public/uploads
+      # 视频（含演示片 + 后台上传）
+      - danzi-videos:/app/public/videos
+    restart: unless-stopped
+
+volumes:
+  danzi-data:
+  danzi-uploads:
+  danzi-videos:

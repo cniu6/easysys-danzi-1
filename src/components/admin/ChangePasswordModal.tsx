@@ -75,7 +75,7 @@ export function ChangePasswordModal({
           </button>
         </div>
         <p className="admin-hint" style={{ marginBottom: "1rem" }}>
-          将写入项目根目录 <code>.env.local</code> 的 <code>ADMIN_PASSWORD</code>
+          将写入 <code>data/.env.local</code>（Docker 持久卷）的 <code>ADMIN_PASSWORD</code>
           ，保存后立即生效，无需重启服务。当前登录会话仍有效。
         </p>
         <form onSubmit={submit} autoComplete="off">

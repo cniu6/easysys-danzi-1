@@ -1,7 +1,20 @@
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
-const ENV_LOCAL = path.join(process.cwd(), ".env.local");
+/**
+ * 解析 .env.local 路径：
+ * - 优先 data/.env.local（Docker 持久卷，改密/配置不丢）
+ * - 其次项目根 .env.local（本地开发）
+ * - 新建时写到 data/（若 data 目录存在）
+ */
+function getEnvLocalPath(): string {
+  const dataDir = path.join(process.cwd(), "data");
+  const inData = path.join(dataDir, ".env.local");
+  const inRoot = path.join(process.cwd(), ".env.local");
+  if (existsSync(inData)) return inData;
+  if (existsSync(inRoot)) return inRoot;
+  return existsSync(dataDir) ? inData : inRoot;
+}
 
 /**
  * 解析 .env 单行值（支持双引号/单引号，去掉行尾注释）
@@ -47,12 +60,13 @@ function isSafeEnvKey(key: string): boolean {
  */
 export function readEnvLocalValue(key: string): string | null {
   if (!isSafeEnvKey(key)) return null;
+  const envPath = getEnvLocalPath();
   try {
-    if (!existsSync(ENV_LOCAL)) {
+    if (!existsSync(envPath)) {
       const fallback = process.env[key];
       return fallback && fallback.length > 0 ? fallback : null;
     }
-    const text = readFileSync(ENV_LOCAL, "utf8");
+    const text = readFileSync(envPath, "utf8");
     const lines = text.split(/\r?\n/);
     // 从后往前找，后写覆盖先写
     for (let i = lines.length - 1; i >= 0; i--) {
@@ -75,6 +89,7 @@ export function readEnvLocalValue(key: string): string | null {
 /**
  * 更新 .env.local 中某一键；不存在则追加
  * 同时同步 process.env，保证当前进程立刻可用
+ * Docker 下优先写入 data/.env.local，随持久卷保存
  */
 export function writeEnvLocalValue(key: string, value: string): void {
   if (!isSafeEnvKey(key)) {
@@ -88,10 +103,16 @@ export function writeEnvLocalValue(key: string, value: string): void {
     throw new Error("值过长");
   }
 
+  const envPath = getEnvLocalPath();
+  const dir = path.dirname(envPath);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+
   const line = `${key}=${formatEnvValue(value)}`;
   let text = "";
-  if (existsSync(ENV_LOCAL)) {
-    text = readFileSync(ENV_LOCAL, "utf8");
+  if (existsSync(envPath)) {
+    text = readFileSync(envPath, "utf8");
   }
 
   const re = new RegExp(`^${key}=.*$`, "m");
@@ -102,7 +123,7 @@ export function writeEnvLocalValue(key: string, value: string): void {
     text = trimmed ? `${trimmed}\n\n${line}\n` : `${line}\n`;
   }
 
-  writeFileSync(ENV_LOCAL, text, "utf8");
+  writeFileSync(envPath, text, "utf8");
   process.env[key] = value;
 }
 
