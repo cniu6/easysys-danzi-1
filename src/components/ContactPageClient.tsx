@@ -2,45 +2,44 @@
 
 import { useLang } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
-import type { SiteContent, SocialLink } from "@/types/content";
-
-function visibleSocials(list: SocialLink[] = []) {
-  return list.filter((s) => {
-    const u = (s.url || "").trim();
-    return u && u !== "#" && u !== "/";
-  });
-}
+import { hasText, visibleSocials } from "@/lib/contact";
+import type { SiteContent } from "@/types/content";
 
 export function ContactPageClient({ content }: { content: SiteContent }) {
   const { lang } = useLang();
   const c = content.contact;
   const socials = visibleSocials(c.socials);
-  const email = t(c.email, lang);
-  const phone = t(c.phone, lang);
-  const phoneCn = t(c.phoneCn, lang);
-  const wechat = t(c.wechat, lang);
+  const address = t(c.address, lang).trim();
+  const email = t(c.email, lang).trim();
+  const phone = t(c.phone, lang).trim();
+  const phoneCn = t(c.phoneCn, lang).trim();
+  const wechat = t(c.wechat, lang).trim();
+  const note = t(c.note, lang).trim();
 
   return (
     <>
       <div className="page-hero">
         <h1>{t(content.pages.contact.title, lang)}</h1>
-        <p>{t(c.note, lang)}</p>
+        {note ? <p>{note}</p> : null}
       </div>
       <div className="contact-panel">
         <div className="contact-card">
-          <p>
-            <strong>{t(c.addressLabel, lang)}</strong>
-            <br />
-            {t(c.address, lang)}
-          </p>
-          {email ? (
+          {hasText(c.address, lang) ? (
+            <p>
+              {/* 标签文案保留在 CMS；值为空整行不显示 */}
+              <strong>{t(c.addressLabel, lang)}</strong>
+              <br />
+              {address}
+            </p>
+          ) : null}
+          {hasText(c.email, lang) ? (
             <p>
               <strong>{t(c.emailLabel, lang)}</strong>
               <br />
               <a href={`mailto:${email}`}>{email}</a>
             </p>
           ) : null}
-          {phone ? (
+          {hasText(c.phone, lang) ? (
             <p>
               <strong>{t(c.phoneLabel, lang)}</strong>
               <br />

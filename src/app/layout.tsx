@@ -1,4 +1,5 @@
 import "./globals.css";
+import { RouteProgressBar } from "@/components/RouteProgressBar";
 
 export default function RootLayout({
   children,
@@ -6,7 +7,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="zh-CN" data-scroll-behavior="smooth">
       <head>
         <title>PARIS MONO</title>
         <meta
@@ -14,7 +15,10 @@ export default function RootLayout({
           content="Wedding & travel photography in Paris"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <RouteProgressBar />
+        {children}
+      </body>
     </html>
   );
 }

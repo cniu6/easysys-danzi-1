@@ -29,12 +29,13 @@ export function Header({ content }: { content: SiteContent }) {
   }, [isHome]);
 
   const links = [
-    { href: "/", label: content.nav.home },
-    { href: "/services", label: content.nav.services },
-    { href: "/photos", label: content.nav.photos },
-    { href: "/videos", label: content.nav.videos },
-    { href: "/contact", label: content.nav.contact },
-  ];
+    { href: "/", label: content.nav.home, show: true },
+    { href: "/services", label: content.nav.services, show: content.pages.services?.enabled !== false },
+    { href: "/photos", label: content.nav.photos, show: content.pages.photos?.enabled !== false },
+    { href: "/videos", label: content.nav.videos, show: content.pages.videos?.enabled !== false },
+    { href: "/about", label: content.nav.about, show: content.pages.about?.enabled !== false },
+    { href: "/contact", label: content.nav.contact, show: content.pages.contact?.enabled !== false },
+  ].filter((x) => x.show);
 
   const logoSrc = overlay
     ? "/images/logo-white.png"

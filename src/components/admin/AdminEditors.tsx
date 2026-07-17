@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type {
   Album,
   GalleryItem,
@@ -11,6 +12,12 @@ import type {
   VideoItem,
 } from "@/types/content";
 import { MediaField } from "./FileManager";
+import { ZoomLightbox } from "@/components/ZoomLightbox";
+import {
+  makeAlbumMedia,
+  normalizeAlbumMedia,
+  syncAlbumMediaFields,
+} from "@/lib/media";
 
 export const emptyI18n = (): I18nText => ({ zh: "", en: "", fr: "" });
 export const uid = (p: string) =>
@@ -205,6 +212,8 @@ export function AlbumsEditor({
   onMsg: (m: Msg) => void;
 }) {
   const albums = content.albums || [];
+  /** 当前打开的灯箱：哪个专辑、第几张 */
+  const [lb, setLb] = useState<{ albumId: string; index: number } | null>(null);
 
   function update(id: string, patch: Partial<Album>) {
     setContent({
@@ -213,95 +222,149 @@ export function AlbumsEditor({
     });
   }
 
+  function setMedia(id: string, media: Album["media"]) {
+    const synced = syncAlbumMediaFields(media || []);
+    update(id, synced);
+  }
+
+  const lbAlbum = lb ? albums.find((a) => a.id === lb.albumId) : null;
+  const lbItems = lbAlbum
+    ? normalizeAlbumMedia(lbAlbum).map((m) => ({
+        src: m.src,
+        type: m.type as "image" | "video",
+        poster: m.poster,
+        label: m.src.split("/").pop(),
+      }))
+    : [];
+
   return (
     <div>
       <div className="admin-panel">
         <h2>图库专辑</h2>
         <p className="admin-hint">
-          前台访问：/gallery/slug 。短地址写在 aliases（每行一个），例如 paris → 访问 /paris
-          会跳转到对应图库。图片可用「从文件库选择」批量加入。
+          前台访问：/gallery/slug 。可添加<strong>图片和视频</strong>。短地址 aliases
+          每行一个（如 paris）。缩略图点击可灯箱预览（支持放大缩小）。
         </p>
       </div>
-      {albums.map((a) => (
-        <div className="admin-item" key={a.id}>
-          <div className="admin-item-head">
-            <strong>/gallery/{a.slug}</strong>
-            <button
-              type="button"
-              className="admin-btn danger"
-              onClick={() =>
-                setContent({ ...content, albums: albums.filter((x) => x.id !== a.id) })
-              }
-            >
-              删除
-            </button>
-          </div>
-          <div className="admin-field">
-            <label>主 slug（英文短名）</label>
-            <input value={a.slug} onChange={(e) => update(a.id, { slug: e.target.value })} />
-          </div>
-          <div className="admin-field">
-            <label>短地址 aliases（每行一个，不要写开头 /）</label>
-            <textarea
-              value={(a.aliases || []).join("\n")}
-              placeholder={"paris\nstudio"}
-              onChange={(e) =>
-                update(a.id, {
-                  aliases: e.target.value
-                    .split("\n")
-                    .map((s) => s.trim().replace(/^\/+/, ""))
-                    .filter(Boolean),
-                })
-              }
-            />
-            <p className="admin-hint">
-              可用：/gallery/{a.slug}
-              {(a.aliases || []).map((x) => ` 、/${x}`).join("")}
-            </p>
-          </div>
-          <I18nFields label="图库标题" value={a.title} onChange={(title) => update(a.id, { title })} />
-          <I18nFields
-            label="图库副标题"
-            value={a.subtitle}
-            onChange={(subtitle) => update(a.id, { subtitle })}
-          />
-          <div className="admin-field">
-            <label>图片列表（{a.images.length} 张）</label>
-            <div className="fm-thumb-strip">
-              {a.images.slice(0, 12).map((src) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={src} src={src} alt="" />
-              ))}
-              {a.images.length > 12 ? (
-                <span className="admin-hint">+{a.images.length - 12}</span>
-              ) : null}
+      {albums.map((a) => {
+        const media = normalizeAlbumMedia(a);
+        return (
+          <div className="admin-item" key={a.id}>
+            <div className="admin-item-head">
+              <strong>/gallery/{a.slug}</strong>
+              <button
+                type="button"
+                className="admin-btn danger"
+                onClick={() =>
+                  setContent({ ...content, albums: albums.filter((x) => x.id !== a.id) })
+                }
+              >
+                删除专辑
+              </button>
             </div>
-            <textarea
-              value={a.images.join("\n")}
-              onChange={(e) =>
-                update(a.id, {
-                  images: e.target.value
-                    .split("\n")
-                    .map((s) => s.trim())
-                    .filter(Boolean),
-                })
-              }
+            <div className="admin-field">
+              <label>主 slug（英文短名）</label>
+              <input value={a.slug} onChange={(e) => update(a.id, { slug: e.target.value })} />
+            </div>
+            <div className="admin-field">
+              <label>短地址 aliases（每行一个，不要写开头 /）</label>
+              <textarea
+                value={(a.aliases || []).join("\n")}
+                placeholder={"paris\nstudio"}
+                onChange={(e) =>
+                  update(a.id, {
+                    aliases: e.target.value
+                      .split("\n")
+                      .map((s) => s.trim().replace(/^\/+/, ""))
+                      .filter(Boolean),
+                  })
+                }
+              />
+              <p className="admin-hint">
+                可用：/gallery/{a.slug}
+                {(a.aliases || []).map((x) => ` 、/${x}`).join("")}
+              </p>
+            </div>
+            <I18nFields
+              label="图库标题"
+              value={a.title}
+              onChange={(title) => update(a.id, { title })}
             />
-            <MediaField
-              label="从文件库批量添加图片"
-              value=""
-              accept="image"
-              multiplePick
-              onChange={() => {}}
-              onPickMany={(urls) => {
-                update(a.id, { images: [...a.images, ...urls] });
-                onMsg({ type: "ok", text: `已加入 ${urls.length} 张，记得保存` });
-              }}
-              onMsg={onMsg}
+            <I18nFields
+              label="图库副标题"
+              value={a.subtitle}
+              onChange={(subtitle) => update(a.id, { subtitle })}
             />
+
+            <div className="admin-field">
+              <label>
+                已添加媒体（{media.length}）· 点缩略图预览 · 点 × 移除
+              </label>
+              {media.length ? (
+                <div className="album-admin-strip">
+                  {media.map((m, i) => (
+                    <div key={m.id} className="album-admin-chip">
+                      <button
+                        type="button"
+                        className="album-admin-chip-main"
+                        title="点击预览"
+                        onClick={() => setLb({ albumId: a.id, index: i })}
+                      >
+                        {m.type === "video" ? (
+                          <video src={m.src} muted playsInline preload="metadata" />
+                        ) : (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={m.src} alt="" />
+                        )}
+                        <span className="fm-kind-tag">
+                          {m.type === "video" ? "VIDEO" : "IMG"}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="album-admin-chip-x"
+                        aria-label="移除"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMedia(
+                            a.id,
+                            media
+                              .filter((x) => x.id !== m.id)
+                              .map((x, idx) => ({ ...x, order: idx + 1 }))
+                          );
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="admin-hint">还没有媒体，下面批量添加即可</p>
+              )}
+
+              <MediaField
+                label="批量添加图片/视频"
+                value=""
+                accept="all"
+                multiplePick
+                pickerOnly
+                onChange={() => {}}
+                onPickMany={(urls) => {
+                  const base = media.length;
+                  const added = urls.map((src, i) => makeAlbumMedia(src, base + i + 1));
+                  setMedia(a.id, [...media, ...added]);
+                  onMsg({
+                    type: "ok",
+                    text: `已加入 ${urls.length} 个，记得保存`,
+                  });
+                }}
+                onMsg={onMsg}
+              />
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
       <button
         type="button"
         className="admin-btn"
@@ -317,6 +380,7 @@ export function AlbumsEditor({
                 enabled: true,
                 title: emptyI18n(),
                 subtitle: emptyI18n(),
+                media: [],
                 images: [],
               },
             ],
@@ -325,6 +389,15 @@ export function AlbumsEditor({
       >
         + 添加图库专辑
       </button>
+
+      {lb && lbItems.length ? (
+        <ZoomLightbox
+          items={lbItems}
+          index={Math.min(lb.index, lbItems.length - 1)}
+          onClose={() => setLb(null)}
+          onIndex={(i) => setLb({ ...lb, index: i })}
+        />
+      ) : null}
     </div>
   );
 }
@@ -611,27 +684,39 @@ export function VideosEditor({
             </select>
           </div>
           <MediaField
-            label={v.type === "file" ? "视频文件" : "视频 ID"}
+            label={v.type === "file" ? "视频文件（选好即可，封面用视频首帧）" : "视频 ID"}
             value={v.src}
             accept="video"
             onChange={(src) => {
               const videos = [...content.videos];
-              videos[i] = { ...v, src };
+              // 选本地视频后清空封面，前台自动用视频首帧
+              videos[i] = {
+                ...v,
+                src,
+                cover: v.type === "file" ? "" : v.cover,
+              };
               setContent({ ...content, videos });
             }}
             onMsg={onMsg}
           />
-          <MediaField
-            label="封面图"
-            value={v.cover}
-            accept="image"
-            onChange={(cover) => {
-              const videos = [...content.videos];
-              videos[i] = { ...v, cover };
-              setContent({ ...content, videos });
-            }}
-            onMsg={onMsg}
-          />
+          {/* 本地文件不需要封面；YouTube/Vimeo 才建议填封面 */}
+          {v.type !== "file" ? (
+            <MediaField
+              label="封面图（外链视频建议填写）"
+              value={v.cover}
+              accept="image"
+              onChange={(cover) => {
+                const videos = [...content.videos];
+                videos[i] = { ...v, cover };
+                setContent({ ...content, videos });
+              }}
+              onMsg={onMsg}
+            />
+          ) : (
+            <p className="admin-hint" style={{ marginTop: "-0.35rem" }}>
+              本地视频无需单独选封面，前台自动显示视频首帧。
+            </p>
+          )}
           <I18nFields
             label="标题"
             value={v.title}
@@ -677,8 +762,8 @@ export function VideosEditor({
               {
                 id: uid("v"),
                 type: "file",
-                src: "/videos/paris-1.mp4",
-                cover: "/images/video-1.jpg",
+                src: "",
+                cover: "",
                 title: emptyI18n(),
                 description: emptyI18n(),
                 href: "/gallery/paris",
@@ -765,9 +850,11 @@ export function PublicityEditor({
 export function PagesEditor({
   content,
   setContent,
+  onMsg,
 }: {
   content: SiteContent;
   setContent: SetContent;
+  onMsg?: (m: Msg) => void;
 }) {
   const map: { key: keyof SiteContent["pages"]; label: string }[] = [
     { key: "photos", label: "作品集页 /photos" },
@@ -777,12 +864,51 @@ export function PagesEditor({
     { key: "contact", label: "联系页 /contact" },
   ];
 
+  const about = content.pages.about;
+
   return (
     <div>
-      <p className="admin-hint" style={{ marginBottom: "1rem" }}>
-        各内页顶部标题与正文，与前台导航名称一致。
-      </p>
+      <div className="admin-panel">
+        <h2>页面开关</h2>
+        <p className="admin-hint">关闭后导航不显示；视频还可单独控制首页是否出现视频区块。</p>
+        {map.map(({ key, label }) => {
+          const page = content.pages[key];
+          return (
+            <label key={key} className="admin-check">
+              <input
+                type="checkbox"
+                checked={page.enabled !== false}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    pages: {
+                      ...content.pages,
+                      [key]: { ...page, enabled: e.target.checked },
+                    },
+                  })
+                }
+              />
+              启用 {label}
+            </label>
+          );
+        })}
+        <label className="admin-check">
+          <input
+            type="checkbox"
+            checked={content.home.showVideosSection !== false}
+            onChange={(e) =>
+              setContent({
+                ...content,
+                home: { ...content.home, showVideosSection: e.target.checked },
+              })
+            }
+          />
+          首页显示视频区块
+        </label>
+      </div>
+
       {map.map(({ key, label }) => {
+        if (key === "about") return null;
         const page = content.pages[key];
         return (
           <div key={key} className="admin-panel">
@@ -814,6 +940,189 @@ export function PagesEditor({
           </div>
         );
       })}
+
+      <div className="admin-panel">
+        <h2>关于页 /about（完整结构）</h2>
+        <I18nFields
+          label="问候语（如 Bonjour）"
+          value={about.greeting || emptyI18n()}
+          onChange={(greeting) =>
+            setContent({
+              ...content,
+              pages: { ...content.pages, about: { ...about, greeting } },
+            })
+          }
+        />
+        <I18nFields
+          label="页面标题"
+          value={about.title}
+          onChange={(title) =>
+            setContent({
+              ...content,
+              pages: { ...content.pages, about: { ...about, title } },
+            })
+          }
+        />
+        <I18nFields
+          label="工作室介绍正文"
+          value={about.content}
+          multiline
+          onChange={(pageContent) =>
+            setContent({
+              ...content,
+              pages: {
+                ...content.pages,
+                about: { ...about, content: pageContent },
+              },
+            })
+          }
+        />
+        <MediaField
+          label="关于页大图"
+          value={about.heroImage || ""}
+          accept="image"
+          onChange={(heroImage) =>
+            setContent({
+              ...content,
+              pages: { ...content.pages, about: { ...about, heroImage } },
+            })
+          }
+          onMsg={onMsg || (() => {})}
+        />
+        <I18nFields
+          label="选择我们的理由 · 标题"
+          value={about.whyTitle || emptyI18n()}
+          onChange={(whyTitle) =>
+            setContent({
+              ...content,
+              pages: { ...content.pages, about: { ...about, whyTitle } },
+            })
+          }
+        />
+        {(about.reasons || []).map((r, i) => (
+          <div className="admin-item" key={r.id}>
+            <div className="admin-item-head">
+              <strong>理由 {i + 1}</strong>
+              <button
+                type="button"
+                className="admin-btn danger"
+                onClick={() =>
+                  setContent({
+                    ...content,
+                    pages: {
+                      ...content.pages,
+                      about: {
+                        ...about,
+                        reasons: about.reasons.filter((x) => x.id !== r.id),
+                      },
+                    },
+                  })
+                }
+              >
+                删除
+              </button>
+            </div>
+            <I18nFields
+              label="标题"
+              value={r.title}
+              onChange={(title) => {
+                const reasons = [...about.reasons];
+                reasons[i] = { ...r, title };
+                setContent({
+                  ...content,
+                  pages: { ...content.pages, about: { ...about, reasons } },
+                });
+              }}
+            />
+            <I18nFields
+              label="说明"
+              value={r.content}
+              multiline
+              onChange={(desc) => {
+                const reasons = [...about.reasons];
+                reasons[i] = { ...r, content: desc };
+                setContent({
+                  ...content,
+                  pages: { ...content.pages, about: { ...about, reasons } },
+                });
+              }}
+            />
+          </div>
+        ))}
+        <button
+          type="button"
+          className="admin-btn"
+          onClick={() =>
+            setContent({
+              ...content,
+              pages: {
+                ...content.pages,
+                about: {
+                  ...about,
+                  reasons: [
+                    ...(about.reasons || []),
+                    {
+                      id: uid("reason"),
+                      title: emptyI18n(),
+                      content: emptyI18n(),
+                      order: (about.reasons?.length || 0) + 1,
+                    },
+                  ],
+                },
+              },
+            })
+          }
+        >
+          + 添加理由
+        </button>
+        <I18nFields
+          label="诚招贤士 · 标题"
+          value={about.joinTitle || emptyI18n()}
+          onChange={(joinTitle) =>
+            setContent({
+              ...content,
+              pages: { ...content.pages, about: { ...about, joinTitle } },
+            })
+          }
+        />
+        <I18nFields
+          label="诚招贤士 · 正文"
+          value={about.joinContent || emptyI18n()}
+          multiline
+          onChange={(joinContent) =>
+            setContent({
+              ...content,
+              pages: { ...content.pages, about: { ...about, joinContent } },
+            })
+          }
+        />
+        <I18nFields
+          label="所需岗位"
+          value={about.joinPositions || emptyI18n()}
+          multiline
+          onChange={(joinPositions) =>
+            setContent({
+              ...content,
+              pages: { ...content.pages, about: { ...about, joinPositions } },
+            })
+          }
+        />
+        <div className="admin-field">
+          <label>招聘邮箱</label>
+          <input
+            value={about.joinEmail || ""}
+            onChange={(e) =>
+              setContent({
+                ...content,
+                pages: {
+                  ...content.pages,
+                  about: { ...about, joinEmail: e.target.value },
+                },
+              })
+            }
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -827,58 +1136,142 @@ export function ContactEditor({
   setContent: SetContent;
   onMsg: (m: Msg) => void;
 }) {
+  const contact = content.contact;
+  const socials = contact.socials || [];
+
+  function patchContact(patch: Partial<typeof contact>) {
+    setContent({ ...content, contact: { ...contact, ...patch } });
+  }
+
   return (
     <div>
-      <I18nFields
-        label="地址"
-        value={content.contact.address}
-        onChange={(address) =>
-          setContent({ ...content, contact: { ...content.contact, address } })
-        }
-      />
-      <I18nFields
-        label="邮箱"
-        value={content.contact.email}
-        onChange={(email) =>
-          setContent({ ...content, contact: { ...content.contact, email } })
-        }
-      />
-      <I18nFields
-        label="电话"
-        value={content.contact.phone}
-        onChange={(phone) =>
-          setContent({ ...content, contact: { ...content.contact, phone } })
-        }
-      />
       <div className="admin-panel">
-        <h2>社交链接（URL 留空则前台不显示）</h2>
-        {content.contact.socials.map((s, i) => (
+        <h2>联系方式</h2>
+        <p className="admin-hint">
+          某项<strong>内容</strong>三语都留空（或当前语言为空）则前台不显示该行；
+          「邮箱 / 地址 / 电话」等<strong>标签名</strong>请保留多语言，方便以后再用。
+        </p>
+      </div>
+
+      <I18nFields
+        label="地址标签名（如：地址 / Address）"
+        value={contact.addressLabel}
+        onChange={(addressLabel) => patchContact({ addressLabel })}
+      />
+      <I18nFields
+        label="地址内容（留空则前台不显示整行）"
+        value={contact.address}
+        onChange={(address) => patchContact({ address })}
+      />
+      <I18nFields
+        label="邮箱标签名（如：邮箱 / Email）"
+        value={contact.emailLabel}
+        onChange={(emailLabel) => patchContact({ emailLabel })}
+      />
+      <I18nFields
+        label="邮箱内容（留空则前台不显示整行）"
+        value={contact.email}
+        onChange={(email) => patchContact({ email })}
+      />
+      <I18nFields
+        label="电话标签名（如：电话 / Tel）"
+        value={contact.phoneLabel}
+        onChange={(phoneLabel) => patchContact({ phoneLabel })}
+      />
+      <I18nFields
+        label="电话内容（留空则前台不显示整行）"
+        value={contact.phone}
+        onChange={(phone) => patchContact({ phone })}
+      />
+      <I18nFields
+        label="国内电话补充（可选，整段文案）"
+        value={contact.phoneCn}
+        onChange={(phoneCn) => patchContact({ phoneCn })}
+      />
+      <I18nFields
+        label="微信（可选）"
+        value={contact.wechat}
+        onChange={(wechat) => patchContact({ wechat })}
+      />
+      <I18nFields
+        label="联系页顶部说明"
+        value={contact.note}
+        multiline
+        onChange={(note) => patchContact({ note })}
+      />
+
+      <div className="admin-panel" style={{ marginTop: "1.25rem" }}>
+        <h2>社交链接</h2>
+        <p className="admin-hint">
+          可随意添加 / 删除。URL 留空则前台不显示该图标；记得填图标与名称。
+        </p>
+        {socials.map((s, i) => (
           <div className="admin-item" key={s.id}>
-            <strong>{s.id}</strong>
+            <div className="admin-item-head">
+              <strong>社交 {i + 1}</strong>
+              <button
+                type="button"
+                className="admin-btn danger"
+                onClick={() =>
+                  patchContact({ socials: socials.filter((x) => x.id !== s.id) })
+                }
+              >
+                删除
+              </button>
+            </div>
+            <I18nFields
+              label="名称（无访问）"
+              value={s.label}
+              onChange={(label) => {
+                const next = [...socials];
+                next[i] = { ...s, label };
+                patchContact({ socials: next });
+              }}
+            />
             <MediaField
               label="图标"
               value={s.image}
               accept="image"
               onChange={(image) => {
-                const socials = [...content.contact.socials];
-                socials[i] = { ...s, image };
-                setContent({ ...content, contact: { ...content.contact, socials } });
+                const next = [...socials];
+                next[i] = { ...s, image };
+                patchContact({ socials: next });
               }}
               onMsg={onMsg}
             />
             <div className="admin-field">
-              <label>链接 URL</label>
+              <label>链接 URL（留空则前台隐藏）</label>
               <input
                 value={s.url}
+                placeholder="https://..."
                 onChange={(e) => {
-                  const socials = [...content.contact.socials];
-                  socials[i] = { ...s, url: e.target.value };
-                  setContent({ ...content, contact: { ...content.contact, socials } });
+                  const next = [...socials];
+                  next[i] = { ...s, url: e.target.value };
+                  patchContact({ socials: next });
                 }}
               />
             </div>
           </div>
         ))}
+        <button
+          type="button"
+          className="admin-btn"
+          onClick={() =>
+            patchContact({
+              socials: [
+                ...socials,
+                {
+                  id: uid("social"),
+                  label: { zh: "新社交", en: "Social", fr: "Réseau" },
+                  image: "/images/social-instagram.png",
+                  url: "",
+                },
+              ],
+            })
+          }
+        >
+          + 添加社交链接
+        </button>
       </div>
     </div>
   );

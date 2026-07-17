@@ -15,7 +15,7 @@ const MIME_TO_EXT: Record<string, string> = {
   "video/webm": "webm",
 };
 
-/** POST /api/upload — 上传图片/视频到 public/uploads */
+/** POST /api/upload — 上传图片/视频到 public/uploads 或指定可写目录 */
 export async function POST(req: NextRequest) {
   if (!(await isAuthenticated())) {
     return unauthorizedResponse();
@@ -44,23 +44,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "文件过大或为空（最大 50MB）" }, { status: 400 });
     }
 
-    // 服务端生成安全文件名，杜绝路径注入
+    // 可选目标目录：仅允许 uploads / videos（及子目录）
+    const rawDir = String(form.get("dir") || "uploads")
+      .replace(/\\/g, "/")
+      .replace(/^\/+/, "")
+      .replace(/\.\./g, "");
+    const top = rawDir.split("/")[0] || "uploads";
+    if (top !== "uploads" && top !== "videos") {
+      return NextResponse.json({ error: "只能上传到 uploads 或 videos" }, { status: 400 });
+    }
+    if (rawDir && !/^[a-zA-Z0-9_\-./]+$/.test(rawDir)) {
+      return NextResponse.json({ error: "非法目录" }, { status: 400 });
+    }
+
     const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    const publicRoot = path.resolve(process.cwd(), "public");
+    const uploadDir = path.resolve(publicRoot, rawDir || "uploads");
+    if (!uploadDir.startsWith(publicRoot)) {
+      return NextResponse.json({ error: "非法路径" }, { status: 400 });
+    }
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
     }
 
     const dest = path.join(uploadDir, safeName);
-    // 二次确认仍在 uploads 内
-    if (!dest.startsWith(path.resolve(uploadDir))) {
+    if (!dest.startsWith(uploadDir)) {
       return NextResponse.json({ error: "非法路径" }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
     await writeFile(dest, Buffer.from(bytes));
 
-    return NextResponse.json({ url: `/uploads/${safeName}` });
+    const urlPath = `/${(rawDir || "uploads").replace(/\/+$/, "")}/${safeName}`.replace(
+      /\/+/g,
+      "/"
+    );
+    return NextResponse.json({ url: urlPath });
   } catch {
     return NextResponse.json({ error: "上传失败" }, { status: 500 });
   }

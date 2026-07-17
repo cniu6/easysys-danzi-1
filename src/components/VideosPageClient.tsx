@@ -9,6 +9,21 @@ export function VideosPageClient({ content }: { content: SiteContent }) {
   const { lang } = useLang();
   const page = content.pages.videos;
 
+  if (page.enabled === false) {
+    return (
+      <div className="page-hero">
+        <h1>{t(page.title, lang)}</h1>
+        <p>
+          {lang === "zh"
+            ? "视频页面暂未开放"
+            : lang === "fr"
+              ? "La page vidéos est temporairement fermée"
+              : "Videos page is currently disabled"}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="page-hero">

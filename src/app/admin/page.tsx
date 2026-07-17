@@ -372,7 +372,9 @@ export default function AdminPage() {
           {tab === "publicity" ? (
             <PublicityEditor content={content} setContent={setContent} onMsg={setMsg} />
           ) : null}
-          {tab === "pages" ? <PagesEditor content={content} setContent={setContent} /> : null}
+          {tab === "pages" ? (
+            <PagesEditor content={content} setContent={setContent} onMsg={setMsg} />
+          ) : null}
           {tab === "contact" ? (
             <ContactEditor content={content} setContent={setContent} onMsg={setMsg} />
           ) : null}

@@ -17,7 +17,10 @@ export default function HomePage() {
       <PhotoGrid items={content.gallery} content={content} />
       <ServiceGrid items={content.services} content={content} />
       <PublicityGrid content={content} />
-      <VideoGrid items={content.videos} content={content} limit={2} />
+      {content.home.showVideosSection !== false &&
+      content.pages.videos?.enabled !== false ? (
+        <VideoGrid items={content.videos} content={content} limit={2} />
+      ) : null}
     </SiteShell>
   );
 }

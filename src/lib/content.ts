@@ -6,13 +6,74 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const CONTENT_PATH = path.join(DATA_DIR, "content.json");
 const PATH_MAP = path.join(DATA_DIR, "path-map.json");
 
+/**
+ * 判断 public 下本地媒体是否真实存在。
+ * 外链（http/https）或空路径不校验。
+ */
+function publicFileExists(url: string): boolean {
+  const u = (url || "").trim();
+  if (!u || /^https?:\/\//i.test(u) || u.startsWith("data:")) return true;
+  if (!u.startsWith("/")) return true;
+  const rel = u.replace(/^\/+/, "").split("?")[0].split("#")[0];
+  if (!rel) return true;
+  return existsSync(path.join(process.cwd(), "public", rel));
+}
+
+/**
+ * 清理已删除文件留下的无效本地路径，避免前台/后台持续 404。
+ * 只清空本地路径；不改写外链。
+ */
+function sanitizeMissingLocalMedia(content: SiteContent): SiteContent {
+  const next = structuredClone(content);
+
+  for (const v of next.videos || []) {
+    if (v.src && !publicFileExists(v.src)) v.src = "";
+    if (v.cover && !publicFileExists(v.cover)) v.cover = "";
+  }
+
+  for (const album of next.albums || []) {
+    if (Array.isArray(album.media)) {
+      album.media = album.media.filter((m) => {
+        if (!m?.src) return false;
+        return publicFileExists(m.src);
+      });
+    }
+    if (Array.isArray(album.images)) {
+      album.images = album.images.filter((src) => publicFileExists(src));
+    }
+    if (album.cover && !publicFileExists(album.cover)) album.cover = "";
+  }
+
+  for (const slide of next.home?.slides || []) {
+    if (slide.image && !publicFileExists(slide.image)) slide.image = "";
+  }
+
+  for (const card of next.galleryCards || []) {
+    if (card.image && !publicFileExists(card.image)) card.image = "";
+  }
+
+  for (const s of next.services || []) {
+    if (s.image && !publicFileExists(s.image)) s.image = "";
+  }
+
+  if (next.publicity?.image && !publicFileExists(next.publicity.image)) {
+    next.publicity.image = "";
+  }
+
+  if (next.pages?.about?.heroImage && !publicFileExists(next.pages.about.heroImage)) {
+    next.pages.about.heroImage = "";
+  }
+
+  return next;
+}
+
 /** 读取站点内容（服务端） */
 export function getContent(): SiteContent {
   if (!existsSync(CONTENT_PATH)) {
     throw new Error("内容文件不存在：data/content.json");
   }
   const raw = readFileSync(CONTENT_PATH, "utf-8");
-  return JSON.parse(raw) as SiteContent;
+  return sanitizeMissingLocalMedia(JSON.parse(raw) as SiteContent);
 }
 
 /** 根据 albums.aliases 生成短地址 → 正式图库路径映射 */
@@ -41,8 +102,10 @@ export function saveContent(content: SiteContent): void {
   if (!existsSync(DATA_DIR)) {
     mkdirSync(DATA_DIR, { recursive: true });
   }
-  writeFileSync(CONTENT_PATH, JSON.stringify(content, null, 2), "utf-8");
-  writePathMap(content);
+  // 写入前再清一遍失效本地路径，防止后台旧状态把已删文件写回去
+  const cleaned = sanitizeMissingLocalMedia(content);
+  writeFileSync(CONTENT_PATH, JSON.stringify(cleaned, null, 2), "utf-8");
+  writePathMap(cleaned);
 }
 
 /** 中间件读取路径映射 */

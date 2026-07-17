@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "videos:demo": "node scripts/download-demo-videos.js"
   },
   "dependencies": {
     "jose": "^6.2.3",
