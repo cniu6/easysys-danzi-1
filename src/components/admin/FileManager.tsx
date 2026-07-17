@@ -579,7 +579,7 @@ export function MediaPickerModal({
   );
 }
 
-/** 媒体路径字段：预览 + 手填 + 上传 + 文件库挑选 */
+/** 媒体路径字段：缩略预览（点击放大）+ 手填 + 上传 + 文件库挑选 */
 export function MediaField({
   label,
   value,
@@ -603,9 +603,12 @@ export function MediaField({
   const [open, setOpen] = useState(false);
   /** 资源加载失败时隐藏预览，避免一直刷 404 */
   const [broken, setBroken] = useState(false);
+  /** 点击缩略图后打开灯箱放大 */
+  const [lbOpen, setLbOpen] = useState(false);
 
   useEffect(() => {
     setBroken(false);
+    setLbOpen(false);
   }, [value]);
 
   const showImage = !pickerOnly && !!value && !broken && isImageSrc(value);
@@ -616,25 +619,43 @@ export function MediaField({
     <div className="admin-field media-field">
       <label>{label}</label>
       {showImage ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          className="admin-preview"
-          src={value}
-          alt=""
-          onError={() => setBroken(true)}
-        />
+        <button
+          type="button"
+          className="admin-preview-hit"
+          onClick={() => setLbOpen(true)}
+          title="点击放大预览"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className="admin-preview"
+            src={value}
+            alt=""
+            onError={() => setBroken(true)}
+          />
+          <span className="admin-preview-hint">点击放大</span>
+        </button>
       ) : null}
       {showVideo ? (
-        <video
-          key={value}
-          className="admin-preview-video"
-          src={value}
-          controls
-          muted
-          playsInline
-          preload="metadata"
-          onError={() => setBroken(true)}
-        />
+        <button
+          type="button"
+          className="admin-preview-hit is-video"
+          onClick={() => setLbOpen(true)}
+          title="点击放大预览"
+        >
+          <video
+            key={value}
+            className="admin-preview-video"
+            src={value}
+            muted
+            playsInline
+            preload="metadata"
+            onError={() => setBroken(true)}
+          />
+          <span className="admin-preview-play" aria-hidden>
+            ▶
+          </span>
+          <span className="admin-preview-hint">点击放大播放</span>
+        </button>
       ) : null}
       {!pickerOnly && value && broken ? (
         <p className="admin-hint" style={{ margin: "6px 0 0", color: "#b45309" }}>
@@ -697,6 +718,20 @@ export function MediaField({
           onMsg?.({ type: "ok", text: "已选择，记得保存" });
         }}
       />
+      {lbOpen && (showImage || showVideo) ? (
+        <ZoomLightbox
+          items={[
+            {
+              src: value,
+              type: showVideo ? "video" : "image",
+              label,
+            },
+          ]}
+          index={0}
+          onClose={() => setLbOpen(false)}
+          onIndex={() => {}}
+        />
+      ) : null}
     </div>
   );
 }

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useLang } from "@/context/LanguageContext";
 import { t } from "@/lib/i18n";
 import type { SiteContent, VideoItem } from "@/types/content";
+import { ZoomLightbox, type ZoomLightboxItem } from "@/components/ZoomLightbox";
 
 function embedUrl(item: VideoItem): string | null {
   if (item.type === "youtube") return `https://www.youtube.com/embed/${item.src}`;
@@ -12,46 +13,43 @@ function embedUrl(item: VideoItem): string | null {
   return null;
 }
 
+/** 把 VideoItem 转成灯箱条目（本地视频 / 外链嵌入） */
+function toLightboxItem(item: VideoItem, lang: "zh" | "en" | "fr"): ZoomLightboxItem | null {
+  const label = t(item.title, lang);
+  const cover = (item.cover || "").trim() || undefined;
+  if (item.type === "file" && item.src) {
+    return { src: item.src, type: "video", poster: cover, label };
+  }
+  const embed = embedUrl(item);
+  if (embed) {
+    return {
+      src: `${embed}?autoplay=1&rel=0`,
+      type: "embed",
+      poster: cover,
+      label,
+    };
+  }
+  return null;
+}
+
 /**
- * 视频卡片：
- * - 本地文件：未播放时直接用视频首帧当封面（不必另传封面图）
+ * 视频卡片：封面预览，点击后开灯箱放大播放
+ * - 本地文件：用视频首帧当封面
  * - YouTube/Vimeo：用封面图（可选）
- * - 点击后才真正播放
  */
 function VideoCard({
   item,
   content,
   lang,
-  activeId,
-  onActivate,
+  onOpen,
 }: {
   item: VideoItem;
   content: SiteContent;
   lang: "zh" | "en" | "fr";
-  activeId: string | null;
-  onActivate: (id: string | null) => void;
+  onOpen: () => void;
 }) {
-  const playing = activeId === item.id;
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const wrapRef = useRef<HTMLElement>(null);
   const [coverReady, setCoverReady] = useState(false);
   const [coverError, setCoverError] = useState(false);
-
-  useEffect(() => {
-    const el = videoRef.current;
-    if (!el) return;
-    if (playing) {
-      el.currentTime = 0;
-      const p = el.play();
-      if (p && typeof p.catch === "function") {
-        p.catch(() => {
-          // 自动播放被拦时仍保留控件
-        });
-      }
-    } else {
-      el.pause();
-    }
-  }, [playing]);
 
   const embed = embedUrl(item);
   const coverSrc = (item.cover || "").trim();
@@ -61,101 +59,61 @@ function VideoCard({
   const useVideoPoster = hasFile;
 
   return (
-    <article ref={wrapRef} className={`video-card ${playing ? "is-playing" : ""}`}>
+    <article className="video-card">
       <div className="video-frame">
-        {playing && embed ? (
-          <>
-            <iframe
-              src={`${embed}?autoplay=1&rel=0`}
-              title={t(item.title, lang)}
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-            />
-            <button
-              type="button"
-              className="video-close"
-              aria-label="关闭视频"
-              onClick={() => onActivate(null)}
-            >
-              ×
-            </button>
-          </>
-        ) : playing && hasFile ? (
-          <>
+        <button
+          type="button"
+          className="video-cover"
+          onClick={() => {
+            if (!canPlay) return;
+            onOpen();
+          }}
+          aria-label={
+            canPlay
+              ? `预览 ${t(item.title, lang)}`
+              : `${t(item.title, lang)}（暂无视频文件）`
+          }
+          disabled={!canPlay}
+        >
+          {useVideoPoster ? (
             <video
-              ref={videoRef}
-              className="video-player"
+              className="video-cover-video"
               src={item.src}
-              poster={coverSrc || undefined}
-              controls
+              muted
               playsInline
-              preload="auto"
-              onEnded={() => onActivate(null)}
+              preload="metadata"
+              // 定在开头附近，显示首帧
+              onLoadedData={(e) => {
+                try {
+                  e.currentTarget.currentTime = 0.1;
+                } catch {
+                  // ignore
+                }
+              }}
             />
-            <button
-              type="button"
-              className="video-close"
-              aria-label="关闭视频"
-              onClick={() => onActivate(null)}
-            >
-              ×
-            </button>
-          </>
-        ) : (
-          <button
-            type="button"
-            className="video-cover"
-            onClick={() => {
-              if (!canPlay) return;
-              onActivate(item.id);
-            }}
-            aria-label={
-              canPlay
-                ? `播放 ${t(item.title, lang)}`
-                : `${t(item.title, lang)}（暂无视频文件）`
-            }
-            disabled={!canPlay}
-          >
-            {useVideoPoster ? (
-              <video
-                className="video-cover-video"
-                src={item.src}
-                muted
-                playsInline
-                preload="metadata"
-                // 定在开头附近，显示首帧
-                onLoadedData={(e) => {
-                  try {
-                    e.currentTarget.currentTime = 0.1;
-                  } catch {
-                    // ignore
-                  }
-                }}
-              />
-            ) : coverSrc && !coverError ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={coverSrc}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                className={coverReady ? "is-ready" : ""}
-                onLoad={() => setCoverReady(true)}
-                onError={() => setCoverError(true)}
-              />
-            ) : (
-              <span className="video-cover-fallback" />
-            )}
-            <span className="video-cover-dim" aria-hidden />
-            {canPlay ? (
-              <span className="play-btn" aria-hidden>
-                ▶
-              </span>
-            ) : (
-              <span className="video-need-upload">待上传成片</span>
-            )}
-          </button>
-        )}
+          ) : coverSrc && !coverError ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={coverSrc}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className={coverReady ? "is-ready" : ""}
+              onLoad={() => setCoverReady(true)}
+              onError={() => setCoverError(true)}
+            />
+          ) : (
+            <span className="video-cover-fallback" />
+          )}
+          <span className="video-cover-dim" aria-hidden />
+          {canPlay ? (
+            <span className="play-btn" aria-hidden>
+              ▶
+            </span>
+          ) : (
+            <span className="video-need-upload">待上传成片</span>
+          )}
+        </button>
       </div>
       <div className="video-meta">
         <h3>{t(item.title, lang)}</h3>
@@ -184,10 +142,22 @@ export function VideoGrid({
   showHeader?: boolean;
 }) {
   const { lang } = useLang();
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [lbIndex, setLbIndex] = useState<number | null>(null);
   const list = [...items]
     .sort((a, b) => a.order - b.order)
     .slice(0, limit ?? items.length);
+
+  // 可预览条目与灯箱 items 对齐（跳过无法播放的）
+  const playable = list
+    .map((item) => ({ item, lb: toLightboxItem(item, lang) }))
+    .filter((x): x is { item: VideoItem; lb: ZoomLightboxItem } => !!x.lb);
+
+  const lbItems = playable.map((x) => x.lb);
+
+  const openItem = (id: string) => {
+    const i = playable.findIndex((x) => x.item.id === id);
+    if (i >= 0) setLbIndex(i);
+  };
 
   return (
     <section className="section video-section">
@@ -206,8 +176,7 @@ export function VideoGrid({
             item={item}
             content={content}
             lang={lang}
-            activeId={activeId}
-            onActivate={setActiveId}
+            onOpen={() => openItem(item.id)}
           />
         ))}
       </div>
@@ -218,6 +187,15 @@ export function VideoGrid({
             {t(content.ui.discover, lang)}
           </Link>
         </div>
+      ) : null}
+
+      {lbIndex !== null && lbItems.length > 0 ? (
+        <ZoomLightbox
+          items={lbItems}
+          index={Math.min(lbIndex, lbItems.length - 1)}
+          onClose={() => setLbIndex(null)}
+          onIndex={setLbIndex}
+        />
       ) : null}
     </section>
   );

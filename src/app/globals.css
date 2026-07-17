@@ -1380,6 +1380,67 @@ main.is-home {
   border: 1px solid var(--line);
 }
 
+/* 后台缩略图：点击打开灯箱放大 */
+.admin-preview-hit {
+  position: relative;
+  display: inline-block;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+  max-width: 100%;
+  text-align: left;
+}
+
+.admin-preview-hit .admin-preview,
+.admin-preview-hit .admin-preview-video {
+  margin-bottom: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.admin-preview-hit.is-video {
+  max-width: 280px;
+  width: 100%;
+}
+
+.admin-preview-hit .admin-preview-play {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #111;
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  padding-left: 2px;
+  pointer-events: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+.admin-preview-hit .admin-preview-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.35rem 0.45rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+  color: #fff;
+  font-size: 0.72rem;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.admin-preview-hit:hover .admin-preview-hint {
+  opacity: 1;
+}
+
 .admin-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1931,6 +1992,11 @@ main.is-home {
   color: #fff;
 }
 
+/* 视频 / 嵌入：更宽的灯箱，接近全屏预览 */
+.zoom-lightbox-inner.is-media {
+  width: min(1280px, 100%);
+}
+
 .zoom-lb-bar {
   display: flex;
   flex-wrap: wrap;
@@ -2022,6 +2088,19 @@ main.is-home {
 .zoom-lb-video {
   max-width: 100%;
   max-height: calc(94vh - 130px);
+  width: auto;
+  height: auto;
+  background: #000;
+  user-select: none;
+  transition: transform 0.08s ease-out;
+  transform-origin: center center;
+}
+
+.zoom-lb-embed {
+  width: min(100%, 1200px);
+  aspect-ratio: 16 / 9;
+  max-height: calc(94vh - 130px);
+  border: 0;
   background: #000;
 }
 
