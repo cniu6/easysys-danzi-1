@@ -32,6 +32,16 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# 临时抓取/调试大文件
+scripts/_mono-*.html
+scripts/*.html
+!scripts/.gitkeep
+
+# 从官网扒下的原始大图备份（体积大，运行不依赖）
+public/images/mono/
+
 
 # vercel
 .vercel

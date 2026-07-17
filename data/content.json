@@ -1,0 +1,556 @@
+{
+  "brand": {
+    "zh": "巴黎MONO",
+    "en": "PARIS MONO",
+    "fr": "PARIS MONO"
+  },
+  "logo": "/images/logo.png",
+  "tagline": {
+    "zh": "海外婚纱旅拍摄影工作室",
+    "en": "Overseas Wedding & Travel Photography",
+    "fr": "Studio photo mariage & voyage à l'étranger"
+  },
+  "meta": {
+    "title": {
+      "zh": "巴黎MONO摄影工作室 | 海外婚纱旅拍",
+      "en": "PARIS MONO Studio | Wedding & Travel Photography",
+      "fr": "PARIS MONO Studio | Photo mariage & voyage"
+    },
+    "description": {
+      "zh": "巴黎海外婚纱旅拍、婚礼纪录与影像服务",
+      "en": "Overseas wedding, pre-wedding and travel photography in Paris",
+      "fr": "Photographie de mariage, pré-mariage et voyage à Paris"
+    }
+  },
+  "nav": {
+    "home": {
+      "zh": "首页",
+      "en": "Home",
+      "fr": "Domicile"
+    },
+    "photos": {
+      "zh": "作品集",
+      "en": "Portfolio",
+      "fr": "Portefeuille"
+    },
+    "videos": {
+      "zh": "视频",
+      "en": "Videos",
+      "fr": "Vidéos"
+    },
+    "services": {
+      "zh": "服务",
+      "en": "Services",
+      "fr": "Prestations"
+    },
+    "about": {
+      "zh": "关于",
+      "en": "About",
+      "fr": "À propos"
+    },
+    "contact": {
+      "zh": "联系我们",
+      "en": "Contact",
+      "fr": "Contact"
+    }
+  },
+  "ui": {
+    "explore": {
+      "zh": "探索",
+      "en": "EXPLORE",
+      "fr": "EXPLORER"
+    },
+    "discover": {
+      "zh": "了解更多",
+      "en": "DISCOVER",
+      "fr": "DÉCOUVRIR"
+    }
+  },
+  "home": {
+    "heroMode": "carousel",
+    "heroSlides": [
+      {
+        "id": "hero-1",
+        "type": "image",
+        "src": "/images/hero/slide-01.jpg",
+        "order": 1
+      },
+      {
+        "id": "hero-2",
+        "type": "image",
+        "src": "/images/hero/slide-02.jpg",
+        "order": 2
+      },
+      {
+        "id": "hero-3",
+        "type": "image",
+        "src": "/images/hero/slide-03.jpg",
+        "order": 3
+      },
+      {
+        "id": "hero-4",
+        "type": "image",
+        "src": "/images/hero/slide-04.jpg",
+        "order": 4
+      }
+    ],
+    "portfolioTitle": {
+      "zh": "作品集",
+      "en": "Portfolio",
+      "fr": "PORTEFEUILLE"
+    },
+    "portfolioContent": {
+      "zh": "这是工作室的作品集，点击下方按钮查看更多",
+      "en": "This is the studio PORTFOLIO — click below to see more",
+      "fr": "Ceci est le PORTFOLIO du studio, veuillez cliquer sur le bouton ci-dessous si vous souhaitez en voir plus"
+    },
+    "servicesTitle": {
+      "zh": "服务",
+      "en": "SERVICE",
+      "fr": "SERVICE"
+    },
+    "servicesContent": {
+      "zh": "这是工作室的服务介绍，点击了解更多",
+      "en": "This is the studio SERVICE — click to learn more",
+      "fr": "Ceci est le SERVICE du studio, veuillez cliquer sur le bouton ci-dessous si vous souhaitez en voir plus"
+    },
+    "videosTitle": {
+      "zh": "影像视频",
+      "en": "VIDEOS",
+      "fr": "VIDÉOS"
+    },
+    "videosContent": {
+      "zh": "旅拍短片与婚礼花絮",
+      "en": "Travel films and wedding highlights",
+      "fr": "Films de voyage et moments de mariage"
+    },
+    "publicityTitle": {
+      "zh": "宣传花絮",
+      "en": "PUBLICITY",
+      "fr": "PUBLICY"
+    },
+    "publicityContent": {
+      "zh": "这是工作室的服务介绍，点击了解更多",
+      "en": "This is the studio SERVICE — click to learn more",
+      "fr": "Ceci est le SERVICE du studio, veuillez cliquer sur le bouton ci-dessous si vous souhaitez en voir plus"
+    }
+  },
+  "pages": {
+    "photos": {
+      "id": "photos",
+      "enabled": true,
+      "title": {
+        "zh": "作品集",
+        "en": "Portfolio",
+        "fr": "PORTEFEUILLE"
+      },
+      "content": {
+        "zh": "这是工作室的作品集，点击下方按钮查看更多",
+        "en": "This is the studio PORTFOLIO — click below to see more",
+        "fr": "Ceci est le PORTFOLIO du studio, veuillez cliquer sur le bouton ci-dessous si vous souhaitez en voir plus"
+      },
+      "media": []
+    },
+    "videos": {
+      "id": "videos",
+      "enabled": true,
+      "title": {
+        "zh": "影像视频",
+        "en": "VIDEOS",
+        "fr": "VIDÉOS"
+      },
+      "content": {
+        "zh": "旅拍短片与婚礼花絮",
+        "en": "Travel films and wedding highlights",
+        "fr": "Films de voyage et moments de mariage"
+      },
+      "media": []
+    },
+    "services": {
+      "id": "services",
+      "enabled": true,
+      "title": {
+        "zh": "服务",
+        "en": "SERVICE",
+        "fr": "SERVICE"
+      },
+      "content": {
+        "zh": "这是工作室的服务介绍，点击了解更多",
+        "en": "This is the studio SERVICE — click to learn more",
+        "fr": "Ceci est le SERVICE du studio, veuillez cliquer sur le bouton ci-dessous si vous souhaitez en voir plus"
+      },
+      "media": []
+    },
+    "about": {
+      "id": "about",
+      "enabled": true,
+      "title": {
+        "zh": "关于我们",
+        "en": "About Us",
+        "fr": "À propos de nous"
+      },
+      "content": {
+        "zh": "巴黎MONO专注海外婚纱旅拍与婚礼纪录。以时尚、永恒、浪漫的影像风格，为每一对新人在巴黎留下专属故事。从影棚、巴黎街景到城堡，我们提供专业拍摄方案与一站式服务。",
+        "en": "PARIS MONO specializes in overseas pre-wedding and wedding photography. Our chic, timeless and romantic style helps every couple tell their story in Paris — from studio and city streets to château sessions, with professional planning and full service.",
+        "fr": "PARIS MONO est spécialisé dans le pré-mariage et le mariage à l'étranger. Un style chic, intemporel et romantique pour raconter votre histoire à Paris — studio, rues et château — avec une organisation professionnelle."
+      },
+      "media": []
+    },
+    "contact": {
+      "id": "contact",
+      "enabled": true,
+      "title": {
+        "zh": "联系我们",
+        "en": "Contact Us",
+        "fr": "Contactez moi"
+      },
+      "content": {
+        "zh": "欢迎联系我们预约档期",
+        "en": "Get in touch to book your session",
+        "fr": "Contactez-nous pour réserver"
+      },
+      "media": []
+    }
+  },
+  "gallery": [
+    {
+      "id": "g1",
+      "image": "/images/photo-studio.jpg",
+      "title": {
+        "zh": "婚纱旅拍",
+        "en": "PRE-WEDDING",
+        "fr": "AVANT MARIAGE"
+      },
+      "category": {
+        "zh": "影棚",
+        "en": "STUDIO",
+        "fr": "STUDIO"
+      },
+      "order": 1,
+      "href": "/gallery/studio"
+    },
+    {
+      "id": "g2",
+      "image": "/images/photo-paris.jpg",
+      "title": {
+        "zh": "婚纱旅拍",
+        "en": "PRE-WEDDING",
+        "fr": "AVANT MARIAGE"
+      },
+      "category": {
+        "zh": "巴黎",
+        "en": "PARIS",
+        "fr": "PARIS"
+      },
+      "order": 2,
+      "href": "/gallery/paris"
+    },
+    {
+      "id": "g3",
+      "image": "/images/photo-chateau.jpg",
+      "title": {
+        "zh": "婚纱旅拍",
+        "en": "PRE-WEDDING",
+        "fr": "AVANT MARIAGE"
+      },
+      "category": {
+        "zh": "城堡",
+        "en": "CASTLE",
+        "fr": "CHÂTEAU"
+      },
+      "order": 3,
+      "href": "/gallery/chateau"
+    }
+  ],
+  "videos": [
+    {
+      "id": "v1",
+      "type": "file",
+      "src": "/videos/paris-1.mp4",
+      "cover": "/images/video-1.jpg",
+      "title": {
+        "zh": "巴黎旅拍短片",
+        "en": "Paris Travel Film",
+        "fr": "Film de voyage à Paris"
+      },
+      "description": {
+        "zh": "一对新人在巴黎的影像纪录",
+        "en": "A couple's day filmed in Paris",
+        "fr": "Le film d'un couple à Paris"
+      },
+      "order": 1,
+      "href": "/gallery/paris"
+    },
+    {
+      "id": "v2",
+      "type": "file",
+      "src": "/videos/paris-2.webm",
+      "cover": "/images/video-2.jpg",
+      "title": {
+        "zh": "城堡婚礼花絮",
+        "en": "Château Wedding",
+        "fr": "Mariage au château"
+      },
+      "description": {
+        "zh": "法国城堡婚礼拍摄花絮",
+        "en": "Highlights from a French château wedding",
+        "fr": "Moments d'un mariage au château"
+      },
+      "order": 2,
+      "href": "/gallery/chateau"
+    }
+  ],
+  "services": [
+    {
+      "id": "s1",
+      "image": "/images/service-prewedding.jpg",
+      "title": {
+        "zh": "婚纱旅拍",
+        "en": "PRE-WEDDING",
+        "fr": "PRÉ-MARIAGE"
+      },
+      "description": {
+        "zh": "通过旅行，拍下美丽的巴黎婚纱照。巴黎是浪漫之都、爱情之城，是海外婚纱旅拍的绝佳选择。我们为您提供专业的婚纱拍摄方案。",
+        "en": "You can get beautiful Paris pre-wedding photos through travelling. Paris is the best choice for special travelling pre-wedding photos — the City of Love and the symbol of Romance. We provide professional shooting plans for you.",
+        "fr": "Obtenez de magnifiques photos de pré-mariage à Paris en voyage. Paris, ville de l'amour et symbole de romantisme, est le meilleur choix. Nous proposons des plans de shooting professionnels."
+      },
+      "order": 1,
+      "href": "/gallery/paris"
+    },
+    {
+      "id": "s2",
+      "image": "/images/service-wedding.jpg",
+      "title": {
+        "zh": "婚礼纪录",
+        "en": "WEDDING",
+        "fr": "MARIAGE"
+      },
+      "description": {
+        "zh": "爱与热情驱动我们的一切。共情是点燃一切的火焰。每一对伴侣都值得拥有一场神奇的拍摄或婚礼体验。让你们的日子精彩，是我们的首要任务。我们的摄影风格时尚、永恒，充满浪漫气息。",
+        "en": "Love and passion inspire everything we do. Empathy is the flame that lights it up. Every couple deserves a magical photo shoot or wedding experience. Making your day amazing is our top priority. Our photography style is chic and timeless with a romantic vibe.",
+        "fr": "L'amour et la passion inspirent tout ce que nous faisons. L'empathie est la flamme qui l'allume. Chaque couple mérite une séance photo ou un mariage magique. Notre style est chic, intemporel et romantique."
+      },
+      "order": 2,
+      "href": "/gallery/chateau"
+    }
+  ],
+  "publicity": [
+    "/images/publicity-1.webp",
+    "/images/publicity-2.webp",
+    "/images/publicity-3.webp",
+    "/images/publicity-4.webp",
+    "/images/publicity-5.jpg",
+    "/images/publicity-6.webp"
+  ],
+  "albums": [
+    {
+      "id": "album-paris",
+      "slug": "paris",
+      "enabled": true,
+      "title": {
+        "zh": "巴黎外景作品展示",
+        "en": "Gallery of Photos — Pre-wedding in Paris",
+        "fr": "Galerie — Pré-mariage à Paris"
+      },
+      "subtitle": {
+        "zh": "巴黎街景婚纱旅拍图库",
+        "en": "Per-wedding in Paris",
+        "fr": "Pré-mariage à Paris"
+      },
+      "images": [
+        "/images/gallery/paris/paris-01.jpg",
+        "/images/gallery/paris/paris-02.jpg",
+        "/images/gallery/paris/paris-03.jpg",
+        "/images/gallery/paris/paris-04.jpg",
+        "/images/gallery/paris/paris-05.jpg",
+        "/images/gallery/paris/paris-06.jpg",
+        "/images/gallery/paris/paris-07.jpg",
+        "/images/gallery/paris/paris-08.jpg",
+        "/images/gallery/paris/paris-09.jpg",
+        "/images/gallery/paris/paris-10.jpg",
+        "/images/gallery/paris/paris-11.jpg",
+        "/images/gallery/paris/paris-12.jpg",
+        "/images/gallery/paris/paris-13.jpg",
+        "/images/gallery/paris/paris-14.jpg",
+        "/images/gallery/paris/paris-15.jpg",
+        "/images/gallery/paris/paris-16.jpg",
+        "/images/gallery/paris/paris-17.jpg",
+        "/images/gallery/paris/paris-18.jpg",
+        "/images/gallery/paris/paris-19.jpg",
+        "/images/gallery/paris/paris-20.jpg",
+        "/images/gallery/paris/paris-21.jpg",
+        "/images/gallery/paris/paris-22.jpg",
+        "/images/gallery/paris/paris-23.jpg",
+        "/images/gallery/paris/paris-24.jpg",
+        "/images/gallery/paris/paris-25.jpg"
+      ],
+      "aliases": [
+        "paris",
+        "pre-wedding-paris"
+      ]
+    },
+    {
+      "id": "album-studio",
+      "slug": "studio",
+      "enabled": true,
+      "title": {
+        "zh": "影棚作品展示",
+        "en": "Studio Gallery",
+        "fr": "Galerie Studio"
+      },
+      "subtitle": {
+        "zh": "影棚婚纱作品",
+        "en": "Pre-wedding in Studio",
+        "fr": "Pré-mariage en studio"
+      },
+      "images": [
+        "/images/photo-studio.jpg",
+        "/images/service-prewedding.jpg",
+        "/images/publicity-1.webp",
+        "/images/publicity-2.webp"
+      ],
+      "aliases": [
+        "studio",
+        "pre-wedding-studio"
+      ]
+    },
+    {
+      "id": "album-chateau",
+      "slug": "chateau",
+      "enabled": true,
+      "title": {
+        "zh": "城堡作品展示",
+        "en": "Château Gallery",
+        "fr": "Galerie Château"
+      },
+      "subtitle": {
+        "zh": "城堡婚纱旅拍",
+        "en": "Pre-wedding at the Castle",
+        "fr": "Pré-mariage au château"
+      },
+      "images": [
+        "/images/photo-chateau.jpg",
+        "/images/service-wedding.jpg",
+        "/images/publicity-3.webp",
+        "/images/publicity-4.webp"
+      ],
+      "aliases": [
+        "chateau",
+        "castle",
+        "pre-wedding-chateau"
+      ]
+    }
+  ],
+  "contact": {
+    "addressLabel": {
+      "zh": "地址",
+      "en": "Address",
+      "fr": "Adresse"
+    },
+    "emailLabel": {
+      "zh": "邮箱",
+      "en": "Email",
+      "fr": "E-mail"
+    },
+    "phoneLabel": {
+      "zh": "电话",
+      "en": "Tel",
+      "fr": "Tél"
+    },
+    "address": {
+      "zh": "法国巴黎共和国广场 21 号，75003",
+      "en": "21 place de la République, 75003 Paris, France",
+      "fr": "21 place de la République 75003 Paris"
+    },
+    "email": {
+      "zh": "monostudiojian@gmail.com",
+      "en": "monostudiojian@gmail.com",
+      "fr": "monostudiojian@gmail.com"
+    },
+    "phone": {
+      "zh": "+33 6 51 98 87 62",
+      "en": "+33 6 51 98 87 62",
+      "fr": "06 51 98 87 62"
+    },
+    "phoneCn": {
+      "zh": "",
+      "en": "",
+      "fr": ""
+    },
+    "wechat": {
+      "zh": "",
+      "en": "",
+      "fr": ""
+    },
+    "note": {
+      "zh": "欢迎联系我们预约档期",
+      "en": "Get in touch to book your session",
+      "fr": "Contactez-nous pour réserver"
+    },
+    "socials": [
+      {
+        "id": "instagram",
+        "label": {
+          "zh": "Instagram",
+          "en": "Instagram",
+          "fr": "Instagram"
+        },
+        "image": "/images/social-instagram.png",
+        "url": "https://www.instagram.com/"
+      },
+      {
+        "id": "facebook",
+        "label": {
+          "zh": "Facebook",
+          "en": "Facebook",
+          "fr": "Facebook"
+        },
+        "image": "/images/social-facebook.png",
+        "url": "https://www.facebook.com/"
+      },
+      {
+        "id": "tiktok",
+        "label": {
+          "zh": "TikTok",
+          "en": "TikTok",
+          "fr": "TikTok"
+        },
+        "image": "/images/social-tiktok.png",
+        "url": "https://www.tiktok.com/"
+      },
+      {
+        "id": "xiaohongshu",
+        "label": {
+          "zh": "小红书",
+          "en": "Xiaohongshu",
+          "fr": "Xiaohongshu"
+        },
+        "image": "/images/social-xiaohongshu.png",
+        "url": "https://www.xiaohongshu.com/"
+      },
+      {
+        "id": "wechat",
+        "label": {
+          "zh": "微信",
+          "en": "WeChat",
+          "fr": "WeChat"
+        },
+        "image": "/images/social-wechat.png",
+        "url": ""
+      }
+    ]
+  },
+  "footer": {
+    "brandLine": {
+      "zh": "巴黎MONO时尚婚纱摄影",
+      "en": "PARIS MONO Fashion Wedding Photography",
+      "fr": "PARIS MONO photographie mariage"
+    },
+    "siretLabel": {
+      "zh": "法国企业注册号(SIRET)",
+      "en": "French business ID (SIRET)",
+      "fr": "SIRET"
+    },
+    "siret": "753 529 205 00035"
+  }
+}
