@@ -10,16 +10,18 @@ export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   const content = getContent();
+  const showVideos =
+    content.home?.showVideosSection !== false &&
+    content.pages?.videos?.enabled !== false;
 
   return (
     <SiteShell content={content}>
       <Hero content={content} />
-      <PhotoGrid items={content.gallery} content={content} />
-      <ServiceGrid items={content.services} content={content} />
+      <PhotoGrid items={content.gallery ?? []} content={content} />
+      <ServiceGrid items={content.services ?? []} content={content} />
       <PublicityGrid content={content} />
-      {content.home.showVideosSection !== false &&
-      content.pages.videos?.enabled !== false ? (
-        <VideoGrid items={content.videos} content={content} limit={2} />
+      {showVideos ? (
+        <VideoGrid items={content.videos ?? []} content={content} limit={2} />
       ) : null}
     </SiteShell>
   );
